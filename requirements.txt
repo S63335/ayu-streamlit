@@ -3,5 +3,6 @@ numpy
 pandas
 pydeck
 streamlit
-scikit-learn.svm
-matplotlib.pyplot
+scikit-learn
+matplotlib
+
