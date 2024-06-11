@@ -200,19 +200,19 @@ elif menu == "Model Training":
 
         # Menghitung Mean Squared Error (MSE) untuk data latih
         mse_test = mean_squared_error(y_test_inv, y_pred_test_inv)
-        print("Mean Squared Error (Test):", mse_test)
+        st.write("Mean Squared Error (Test):", mse_test)
 
         # Menghitung Root Mean Squared Error (RMSE) untuk data latih
         rmse_test = np.sqrt(mse_test)
-        print("Root Mean Squared Error (Test):", rmse_test)
+        st.write("Root Mean Squared Error (Test):", rmse_test)
 
         # Menghitung Mean Absolute Error (MAE) untuk data latih
         mae_test = mean_absolute_error(y_test_inv, y_pred_test_inv)
-        print("Mean Absolute Error (Test):", mae_test)
+        st.write("Mean Absolute Error (Test):", mae_test)
 
         # Menghitung Koefisien Determinasi (R^2) untuk data latih
         r2_test = r2_score(y_test_inv, y_pred_test_inv)
-        print("R^2 (Test):", r2_test)
+        st.write("R^2 (Test):", r2_test)
 
         import matplotlib.pyplot as plt
         # Membuat plot
@@ -246,8 +246,7 @@ elif menu == "Model Training":
         st.write('ACtual vs SVR Prediction')
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
-        plt.title('ACtual vs SVR Prediction')
-
+    
         # Menambahkan legenda
         plt.legend()
 
@@ -261,9 +260,9 @@ elif menu == "Model Training":
     def main():
         st.title(" 2) Inbound Tourism using GRNN ")
 
-         #Reading the csv file
+        #Reading the csv file
         df = pd.read_excel('Malaysia-Tourism1.xlsx')
-        df
+        st.dataframe(df)
 
         df.isnull().sum()
 
@@ -431,7 +430,6 @@ elif menu == "Model Training":
         st.write('Actual Data vs GRNN Prediction')
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
-
 
         # Menambahkan legenda
         plt.legend()
