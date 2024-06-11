@@ -57,64 +57,100 @@ elif menu == "Model Training":
         st.title(" 1) Inbound Tourism using SVR ")
 
         #Reading the csv file
-        df = pd.read_csv('Malaysia-Tourism.csv')
-    
-        st.subheader("Data:")
-        st.write(df.head())
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df
 
-        # Konversi kolom 'Date' ke format datetime dengan dayfirst=True
-        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
+        df.isnull().sum()
 
-        # Set 'Date' sebagai indeks
-        df.set_index('Date', inplace=True)
+        data = df.drop(['Date'], axis=1)
+        data.head()
 
-        # Siapkan data untuk SVR
-        # Mengubah Date menjadi nilai numerik karena SVR tidak bisa bekerja dengan tipe datetime secara langsung
-        df['NumericDate'] = df.index.map(pd.Timestamp.toordinal)
+        #Time Series Generator
+        #Choose input and output
+        n_input = 1
+        n_output = 1
 
-        # Fitur dan target
-        X = df['NumericDate'].values.reshape(-1, 1)
-        y = df['Actual'].values
+        # Membuat TimeseriesGenerator
+        generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
 
-        # Normalisasi fitur
-        scaler_X = StandardScaler()
-        scaler_y = StandardScaler()
+        # Membuat DataFrame untuk menyimpan hasil
+        data_ts = pd.DataFrame(columns=['x', 'y'])
 
-        X_scaled = scaler_X.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).ravel()
+        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
+        for i in range(len(generator)):
+            x, y = generator[i]
+            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+            data_ts = pd.concat([data_ts, df], ignore_index=True)
 
-        # Inisialisasi model SVR
-        svr_model = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
+        # Menampilkan DataFrame hasil
+        print(data_ts)
 
-        # Fit model SVR
-        svr_model.fit(X_scaled, y_scaled)
+        #Split Data
+        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
-        # Prediksi pada data aktual
-        y_pred_scaled = svr_model.predict(X_scaled)
-        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
+        X = np.array(data_ts['x'])
+        Y = np.array(data_ts['y'])
 
-        # Plot hasil prakiraan dan nilai aktual
-        fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(df.index, df['Actual'], label='Actual')
-        ax.plot(df.index, y_pred, label='SVR Predictions', linestyle='--', color='blue')
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Tourism Numbers')
-        ax.set_title('Inbound Tourism using SVR')
-        ax.legend()
-        st.pyplot(fig)
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
-        # Hitung MSE, RMSE, dan MAE
-        st.subheader(f"Value of MSE, RMSE & MAE:")
-        mse = mean_squared_error(y, y_pred)
-        rmse = np.sqrt(mse)
-        mae = mean_absolute_error(y, y_pred)
-        r2 = r2_score(y, y_pred)
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(Y, label='Prediction Value', marker='x')
 
-        st.write(f'Mean Squared Error (MSE): {mse}')
-        st.write(f'Root Mean Squared Error (RMSE): {rmse}')
-        st.write(f'Mean Absolute Error (MAE): {mae}')
-        st.write(f'R-squared (R^2): {r2}')
+        # Menambahkan label sumbu dan judul
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('Actual Data')
 
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        plt.show()
+
+        X_train = X_train.reshape(-1,1)
+        y_train = y_train.reshape(-1,1)
+
+        X_test = X_test.reshape(-1,1)
+        y_test = y_test.reshape(-1,1)
+
+        #Scaling Dataset
+        scaler_X = MinMaxScaler()
+        scaler_y = MinMaxScaler()
+
+        X_train_scaled = scaler_X.fit_transform(X_train)
+        y_train_scaled = scaler_y.fit_transform(y_train)
+
+        X_test_scaled = scaler_X.fit_transform(X_test)
+        y_test_scaled = scaler_y.fit_transform(y_test)
+
+        # Initialize and fit the SVR model
+        svr_model = SVR(kernel='rbf')
+        svr_model.fit(X_train_scaled, y_train_scaled)
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = svr_model.predict(X_train_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_scaled, y_pred_train)
+        print("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        print("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_scaled, y_pred_train)
+        print("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_scaled, y_pred_train)
+        print("R^2 (Train):", r2_train)
+        
     if __name__ == "__main__":
         main()
 
