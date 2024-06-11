@@ -91,7 +91,6 @@ elif menu == "Model Training":
         Y = np.array(data_ts['y'])
 
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-
         X_train = X_train.reshape(-1,1)
         y_train = y_train.reshape(-1,1)
 
