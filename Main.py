@@ -59,7 +59,7 @@ elif menu == "Model Training":
         st.title(" 1) Inbound Tourism using SVR ")
         
         # Load and display your dataset here
-        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df = pd.read_csv('Malaysia-Tourism1.csv')
         st.dataframe(df)
         
         df.isnull().sum()
@@ -261,7 +261,7 @@ elif menu == "Model Training":
         st.title(" 2) Inbound Tourism using GRNN ")
 
         #Reading the csv file
-        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df = pd.read_csv('Malaysia-Tourism1.csv')
         st.dataframe(df)
 
         df.isnull().sum()
