@@ -84,13 +84,12 @@ elif menu == "Model Training":
             df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
             data_ts = pd.concat([data_ts, df], ignore_index=True)
 
+        st.write(data_ts)
+
         #Split Data
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
-        try:
-            X = np.array(data_ts['x'])
-        except KeyError:
-            st.write("Key 'x' not found in data_ts")
+        X = np.array(data_ts['x'])
         Y = np.array(data_ts['y'])
 
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
