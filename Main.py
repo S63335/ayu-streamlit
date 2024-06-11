@@ -84,9 +84,6 @@ elif menu == "Model Training":
             df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
             data_ts = pd.concat([data_ts, df], ignore_index=True)
 
-        # Menampilkan DataFrame hasil
-        st.write(data_ts)
-
         #Split Data
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
