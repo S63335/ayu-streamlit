@@ -45,7 +45,7 @@ elif menu == "Data Overview":
 
     with col1:
         # Load and display your dataset here
-        df = pd.read_csv('Malaysia-Tourism.csv')
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
         st.dataframe(df)
 
     with col2:
@@ -58,12 +58,11 @@ elif menu == "Model Training":
 
         #Reading the csv file
         df = pd.read_excel('Malaysia-Tourism1.xlsx')
-        df
+        st.write(df)
 
         df.isnull().sum()
 
         data = df.drop(['Date'], axis=1)
-        data.head()
 
         #Time Series Generator
         #Choose input and output
@@ -82,8 +81,9 @@ elif menu == "Model Training":
             df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
             data_ts = pd.concat([data_ts, df], ignore_index=True)
 
-        # Menampilkan DataFrame hasil
-        print(data_ts)
+        # Display the generated time series data
+        st.write("Time Series Data:")
+        st.write(data_ts)
 
         #Split Data
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
@@ -94,20 +94,21 @@ elif menu == "Model Training":
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
         import matplotlib.pyplot as plt
+
         # Membuat plot
         plt.plot(Y, label='Prediction Value', marker='x')
 
         # Menambahkan label sumbu dan judul
+        st.write("Actual Data:")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
-        plt.title('Actual Data')
 
         # Menambahkan legenda
         plt.legend()
 
         # Menampilkan plot
         plt.grid(True)
-        plt.show()
+        st.pyplot()
 
         X_train = X_train.reshape(-1,1)
         y_train = y_train.reshape(-1,1)
@@ -137,6 +138,173 @@ elif menu == "Model Training":
 
         # Menghitung Mean Squared Error (MSE) untuk data latih
         mse_train = mean_squared_error(y_train_scaled, y_pred_train)
+        st.write("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_scaled, y_pred_train)
+        st.write("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_scaled, y_pred_train)
+        st.write("R^2 (Train):", r2_train)
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_test = svr_model.predict(X_test_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_scaled, y_pred_test)
+        st.write("Mean Squared Error (Test):", mse_test)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Test):", rmse_test)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_scaled, y_pred_test)
+        st.write("Mean Absolute Error (Test):", mae_test)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_scaled, y_pred_test)
+        st.write("R^2 (Test):", r2_test)
+
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
+        plt.plot(y_test, label='SVR Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs SVR Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+    
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+        x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
+        y_pred = svr_model.predict(x_scaled)
+
+        import matplotlib.pyplot as plt
+        y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
+
+        # Membuat plot
+        plt.plot(Y, label='Actual Data', marker='o')
+        plt.plot(y_pred_inv, label='SVR Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('ACtual vs SVR Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+    if __name__ == "__main__":
+        main()
+
+    def main():
+        st.title(" 2) Inbound Tourism using GRNN ")
+
+         #Reading the csv file
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df
+
+        df.isnull().sum()
+
+        data = df.drop(['Date'], axis=1)
+        data.head()
+
+        #Time Series Generator
+        #Choose input and output
+        n_input = 1
+        n_output = 1
+
+        # Membuat TimeseriesGenerator
+        generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
+
+        # Membuat DataFrame untuk menyimpan hasil
+        data_ts = pd.DataFrame(columns=['x', 'y'])
+
+        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
+        for i in range(len(generator)):
+            x, y = generator[i]
+            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+            data_ts = pd.concat([data_ts, df], ignore_index=True)
+
+        #Split Data
+        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
+
+        X = np.array(data_ts['x'])
+        Y = np.array(data_ts['y'])
+
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        st.pyplot(Y, label='Prediction Value', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('Actual Data')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        plt.show()
+
+        X_train = X_train.reshape(-1,1)
+        y_train = y_train.reshape(-1,1)
+
+        X_test = X_test.reshape(-1,1)
+        y_test = y_test.reshape(-1,1)
+
+        #Scaling Dataset
+        scaler_X = MinMaxScaler()
+        scaler_y = MinMaxScaler()
+
+        X_train_scaled = scaler_X.fit_transform(X_train)
+        y_train_scaled = scaler_y.fit_transform(y_train)
+
+        X_test_scaled = scaler_X.fit_transform(X_test)
+        y_test_scaled = scaler_y.fit_transform(y_test)
+        X_scaled = scaler_X.fit_transform(X)
+        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).ravel()
+
+        from pyGRNN import GRNN
+
+        # Initialize and fit the GRNN model
+        grnn_model = GRNN(calibration="None")
+        grnn_model.fit(X_train_scaled, y_train_scaled)
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = grnn_model.predict(X_train_scaled)
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = grnn_model.predict(X_train_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_scaled, y_pred_train)
         print("Mean Squared Error (Train):", mse_train)
 
         # Menghitung Root Mean Squared Error (RMSE) untuk data latih
@@ -150,71 +318,84 @@ elif menu == "Model Training":
         # Menghitung Koefisien Determinasi (R^2) untuk data latih
         r2_train = r2_score(y_train_scaled, y_pred_train)
         print("R^2 (Train):", r2_train)
-        
-    if __name__ == "__main__":
-        main()
 
-    def grnn_predict(X_train, y_train, X_test, sigma=0.1):
-        diff = X_train - X_test[:, np.newaxis]
-        distance = np.exp(-np.sum(diff ** 2, axis=2) / (2 * sigma ** 2))
-        output = np.sum(distance * y_train, axis=1, keepdims=True) / np.sum(distance, axis=1, keepdims=True)
-        return output
-
-    def main():
-        st.title(" 2) Inbound Tourism using GRNN ")
-
-        #Reading the csv file
-        df = pd.read_csv('Malaysia-Tourism.csv')
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_train_inv, label='Actual Data', marker='o')
+        plt.plot(y_train, label='GRNN Prediction', marker='x')
     
+        # Menambahkan label sumbu dan judul
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('Actual Data vs GRNN Prediction')
 
-        st.subheader("Data:")
-        st.write(df.head())
+        # Menambahkan legenda
+        plt.legend()
 
-        # Convert 'Date' column to datetime format with dayfirst=True
-        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
+        # Menampilkan plot
+        plt.grid(True)
+        plt.show()
 
-        # Set 'Date' as the index
-        df.set_index('Date', inplace=True)
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
 
-        # Prepare data for GRNN
-        df['NumericDate'] = df.index.map(pd.Timestamp.toordinal)
+        # Prediksi nilai untuk data latih
+        y_pred_test = grnn_model.predict(X_test_scaled)
 
-        # Features and target
-        X = df['NumericDate'].values.reshape(-1, 1)
-        y = df['Actual'].values
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_scaled, y_pred_test)
+        print("Mean Squared Error (Test):", mse_test)
 
-        # Normalize features
-        scaler_X = StandardScaler()
-        scaler_y = StandardScaler()
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_train)
+        print("Root Mean Squared Error (Test):", rmse_test)
 
-        X_scaled = scaler_X.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).ravel()
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_scaled, y_pred_test)
+        print("Mean Absolute Error (Test):", mae_test)
 
-        # Predict on actual data
-        y_pred_scaled = grnn_predict(X_scaled, y_scaled, X_scaled)
-        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_scaled, y_pred_test)
+        print("R^2 (Test):", r2_test)
 
-        # Plot actual and predicted values
-        fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(df.index, df['Actual'], label='Actual')
-        ax.plot(df.index, y_pred, label='GRNN Predictions', linestyle='--', color='blue')
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Tourism Numbers')
-        ax.set_title('Inbound Tourism using GRNN')
-        ax.legend()
-        st.pyplot(fig)
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
+        plt.plot(y_test, label='GRNN Prediction', marker='x')
 
-        # Calculate and display MSE, RMSE, and MAE
-        st.subheader(f"Value of MSE, RMSE & MAE:")
-        mse = mean_squared_error(y, y_pred)
-        rmse = np.sqrt(mse)
-        mae = mean_absolute_error(y, y_pred)
-        r2 = r2_score(y, y_pred)
+        # Menambahkan label sumbu dan judul
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('Actual Data vs GRNN Prediction')
 
-        st.write(f'Mean Squared Error (MSE): {mse}')
-        st.write(f'Root Mean Squared Error (RMSE): {rmse}')
-        st.write(f'Mean Absolute Error (MAE): {mae}')
-        st.write(f'R-squared (R^2): {r2}')
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        plt.show()
+
+        x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
+        y_pred = grnn_model.predict(x_scaled)
+
+        import matplotlib.pyplot as plt
+        y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
+    
+        # Membuat plot
+        plt.plot(Y, label='Actual Data', marker='o')
+        plt.plot(y_pred_inv, label='GRNN Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('Actual Data vs GRNN Prediction')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        plt.show()
 
     if __name__ == "__main__":
         main()
