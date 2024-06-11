@@ -59,7 +59,7 @@ elif menu == "Model Training":
         st.title(" 1) Inbound Tourism using SVR ")
         
         # Load and display your dataset here
-        st.header("Actual data")
+        st.header("- Actual data")
         df = pd.read_csv('Malaysia-Tourism1.csv')
         st.dataframe(df)
         
@@ -85,7 +85,7 @@ elif menu == "Model Training":
             df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
             data_ts = pd.concat([data_ts, df], ignore_index=True)
             
-        st.header("Train Data")
+        st.header("- Train Data")
         st.write(data_ts)
 
         #Split Data
