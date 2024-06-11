@@ -47,7 +47,7 @@ elif menu == "Data Overview":
 
     with col1:
         # Load and display your dataset here
-        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df = pd.read_csv('Malaysia-Tourism1.csv')
         st.dataframe(df)
         
     with col2:
