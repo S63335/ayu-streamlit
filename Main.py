@@ -49,7 +49,7 @@ elif menu == "Data Overview":
         # Load and display your dataset here
         df = pd.read_excel('Malaysia-Tourism1.xlsx')
         st.dataframe(df)
-
+        
     with col2:
         st.image("Data Animation.gif", width=400)
 
@@ -57,11 +57,11 @@ elif menu == "Model Training":
     # Add your model training code here
     def main():
         st.title(" 1) Inbound Tourism using SVR ")
-
-        #Reading the csv file
+        
+        # Load and display your dataset here
         df = pd.read_excel('Malaysia-Tourism1.xlsx')
-        df
-
+        st.dataframe(df)
+        
         df.isnull().sum()
 
         data = df.drop(['Date'], axis=1)
@@ -467,16 +467,6 @@ elif menu == "Model Training":
         main()
 
 elif menu == "Predictions":
-
-    def grnn_predict(X_train, y_train, X_test, sigma=0.1):
-        # Calculate the Gaussian kernel
-        diff = X_train - X_test[:, np.newaxis]
-        distance = np.exp(-np.sum(diff ** 2, axis=2) / (2 * sigma ** 2))
-    
-        # Calculate the output using the kernel
-        output = np.sum(distance * y_train, axis=1, keepdims=True) / np.sum(distance, axis=1, keepdims=True)
-    
-        return output
 
     def main():
         st.title("Inbound Tourism Forecasting")
