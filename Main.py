@@ -87,9 +87,10 @@ elif menu == "Model Training":
         #Split Data
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
-        X = np.array(data_ts['x'])
+        try:
+            X = np.array(data_ts['x'])
         except KeyError:
-        st.write("Key 'x' not found in data_ts")
+            st.write("Key 'x' not found in data_ts")
         Y = np.array(data_ts['y'])
 
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
