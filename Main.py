@@ -275,6 +275,7 @@ elif menu == "Model Training":
         st.title(" 2) Inbound Tourism using GRNN ")
 
         #Reading the csv file
+        st.header("- Actual Data")
         df = pd.read_csv('Malaysia-Tourism1.csv')
         st.dataframe(df)
 
@@ -301,6 +302,7 @@ elif menu == "Model Training":
             data_ts = pd.concat([data_ts, df], ignore_index=True)
 
         # Menampilkan DataFrame hasil
+        st.header("- Train Data")
         st.write(data_ts)
 
         #Split Data
