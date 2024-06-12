@@ -528,23 +528,11 @@ elif menu == "Predictions":
     st.header("- Train Data")
     st.write(data_ts)
 
-    # Split Data
-    import numpy as np
-    from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import MinMaxScaler
-    from sklearn.svm import SVR
+     # Split Data
+    X = data_ts['x'].values.reshape(-1, 1)
+    y = data_ts['y'].values.reshape(-1, 1)
 
-    data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
-
-    X = np.array(data_ts['x'])
-    Y = np.array(data_ts['y'])
-
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-    X_train = X_train.reshape(-1, 1)
-    y_train = y_train.reshape(-1, 1)
-
-    X_test = X_test.reshape(-1, 1)
-    y_test = y_test.reshape(-1, 1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Scaling Dataset
     scaler_X = MinMaxScaler()
@@ -552,9 +540,6 @@ elif menu == "Predictions":
 
     X_train_scaled = scaler_X.fit_transform(X_train)
     y_train_scaled = scaler_y.fit_transform(y_train)
-
-    X_test_scaled = scaler_X.fit_transform(X_test)
-    y_test_scaled = scaler_y.fit_transform(y_test)
 
     # Display "Select Model:" as a header
     st.subheader("Select Model:")
@@ -571,6 +556,8 @@ elif menu == "Predictions":
 
         # Perform prediction
         prediction_scaled = svr_model.predict(scaler_X.transform([[user_input]]))
+        # Reshape the prediction_scaled array to be 2D
+        prediction_scaled = prediction_scaled.reshape(-1, 1)
         prediction = scaler_y.inverse_transform(prediction_scaled)
 
     elif model_selection == "General Regression Neural Network (GRNN)":
