@@ -604,8 +604,8 @@ elif menu == "Predictions":
         plt.legend()
         st.pyplot()
         
-    if __name__ == "__main__":
-    main()
+if __name__ == "__main__":
+main()
 
 elif menu == "About":
     st.header("About")
