@@ -89,6 +89,9 @@ elif menu == "Model Training":
         st.write(data_ts)
 
         #Split Data
+
+        import numpy as np
+        
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
         X = np.array(data_ts['x'])
