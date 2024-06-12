@@ -587,9 +587,9 @@ elif menu == "Predictions":
             prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
             prediction = scaler_y.inverse_transform(prediction_scaled)
 
-        # Display the prediction
-        st.subheader("Prediction:")
-        st.write(prediction)
+            # Display the prediction
+            st.subheader("Prediction:")
+            st.write(prediction)
 
     main()
             # Plotting forecasted and actual values
