@@ -249,6 +249,7 @@ elif menu == "Model Training":
         y_pred = svr_model.predict(x_scaled)
 
         import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
         y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
 
         # Membuat plot
@@ -256,7 +257,7 @@ elif menu == "Model Training":
         plt.plot(y_pred_inv, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.write('ACtual vs SVR Prediction')
+        st.header("ACtual vs SVR Prediction")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
     
@@ -265,7 +266,7 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
     if __name__ == "__main__":
         main()
