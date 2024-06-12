@@ -493,114 +493,117 @@ elif menu == "Model Training":
 
 elif menu == "Predictions":
 
-    def main():
-        st.title("Inbound Tourism Forecasting")
+   def main():
+    st.title("Inbound Tourism Forecasting")
 
-        # Read data from CSV file
-        df = pd.read_csv('Malaysia-Tourism1.csv')
+    # Read data from CSV file
+    df = pd.read_csv('Malaysia-Tourism1.csv')
 
-        # Show data
-        st.subheader("Data:")
-        st.write(df.head())
+    # Show data
+    st.subheader("Data:")
+    st.write(df.head())
 
-        df.isnull().sum()
+    df.isnull().sum()
 
-        data = df.drop(['Date'], axis=1)
-        data.head()
+    data = df.drop(['Date'], axis=1)
+    data.head()
 
-        # Time Series Generator
-        # Choose input and output
-        n_input = 1
-        n_output = 1
+    # Time Series Generator
+    # Choose input and output
+    n_input = 1
+    n_output = 1
 
-        # Membuat TimeseriesGenerator
-        generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
+    # Membuat TimeseriesGenerator
+    generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
 
-        # Membuat DataFrame untuk menyimpan hasil
-        data_ts = pd.DataFrame(columns=['x', 'y'])
+    # Membuat DataFrame untuk menyimpan hasil
+    data_ts = pd.DataFrame(columns=['x', 'y'])
 
-        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
-        for i in range(len(generator)):
-            x, y = generator[i]
-            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
-            data_ts = pd.concat([data_ts, df], ignore_index=True)
+    # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
+    for i in range(len(generator)):
+        x, y = generator[i]
+        df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+        data_ts = pd.concat([data_ts, df], ignore_index=True)
 
-        st.header("- Train Data")
-        st.write(data_ts)
+    st.header("- Train Data")
+    st.write(data_ts)
 
-        # Split Data
-        import numpy as np
-        from sklearn.model_selection import train_test_split
-        from sklearn.preprocessing import MinMaxScaler
-        from sklearn.svm import SVR
+    # Split Data
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.svm import SVR
 
-        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
+    data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
-        X = np.array(data_ts['x'])
-        Y = np.array(data_ts['y'])
+    X = np.array(data_ts['x'])
+    Y = np.array(data_ts['y'])
 
-        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-        X_train = X_train.reshape(-1, 1)
-        y_train = y_train.reshape(-1, 1)
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+    X_train = X_train.reshape(-1, 1)
+    y_train = y_train.reshape(-1, 1)
 
-        X_test = X_test.reshape(-1, 1)
-        y_test = y_test.reshape(-1, 1)
+    X_test = X_test.reshape(-1, 1)
+    y_test = y_test.reshape(-1, 1)
 
-        # Scaling Dataset
-        scaler_X = MinMaxScaler()
-        scaler_y = MinMaxScaler()
+    # Scaling Dataset
+    scaler_X = MinMaxScaler()
+    scaler_y = MinMaxScaler()
 
-        X_train_scaled = scaler_X.fit_transform(X_train)
-        y_train_scaled = scaler_y.fit_transform(y_train)
+    X_train_scaled = scaler_X.fit_transform(X_train)
+    y_train_scaled = scaler_y.fit_transform(y_train)
 
-        X_test_scaled = scaler_X.fit_transform(X_test)
-        y_test_scaled = scaler_y.fit_transform(y_test)
+    X_test_scaled = scaler_X.fit_transform(X_test)
+    y_test_scaled = scaler_y.fit_transform(y_test)
 
-        # Display "Select Model:" as a header
-        st.subheader("Select Model:")
-        # Model selection using radio button
-        model_selection = st.radio("", ("Support Vector Regression (SVR)", "General Regression Neural Network (GRNN)"))
+    # Display "Select Model:" as a header
+    st.subheader("Select Model:")
+    # Model selection using radio button
+    model_selection = st.radio("", ("Support Vector Regression (SVR)", "General Regression Neural Network (GRNN)"))
 
-        if model_selection == "Support Vector Regression (SVR)":
-            # Initialize and fit the SVR model
-            svr_model = SVR(kernel='rbf')
-            svr_model.fit(X_train_scaled, y_train_scaled)
+    if model_selection == "Support Vector Regression (SVR)":
+        # Initialize and fit the SVR model
+        svr_model = SVR(kernel='rbf')
+        svr_model.fit(X_train_scaled, y_train_scaled)
 
-            # User input for prediction
-            user_input = st.number_input("Enter the value for prediction:", min_value=0.0)
+        # User input for prediction
+        user_input = st.number_input("Enter the value for prediction:", min_value=1)
 
-            # Perform prediction
-            prediction_scaled = svr_model.predict(scaler_X.transform([[user_input]]))
-            prediction = scaler_y.inverse_transform(prediction_scaled)
+        # Perform prediction
+        prediction_scaled = svr_model.predict(scaler_X.transform([[user_input]]))
+        prediction = scaler_y.inverse_transform(prediction_scaled)
 
-        elif model_selection == "General Regression Neural Network (GRNN)":
-            from pyGRNN import GRNN
+    elif model_selection == "General Regression Neural Network (GRNN)":
+        from pyGRNN import GRNN
 
-            # Initialize and fit the GRNN model
-            grnn_model = GRNN(calibration="None")
-            grnn_model.fit(X_train_scaled, y_train_scaled)
+        # Initialize and fit the GRNN model
+        grnn_model = GRNN(calibration="None")
+        grnn_model.fit(X_train_scaled, y_train_scaled)
 
-            # User input for prediction
-            user_input = st.number_input("Enter the value for prediction:", min_value=0.0)
+        # User input for prediction
+        user_input = st.number_input("Enter the value for prediction:", min_value=1)
 
-            # Perform prediction
-            prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
-            prediction = scaler_y.inverse_transform(prediction_scaled)
+        # Perform prediction
+        prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
+        prediction = scaler_y.inverse_transform(prediction_scaled)
 
-            # Display the prediction
-            st.subheader("Prediction:")
-            st.write(prediction)
+    # Display the prediction
+    st.subheader("Prediction:")
+    st.write(prediction)
 
+    # Plotting forecasted and actual values
+    st.subheader("Predictions:")
+    plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
+
+    # Print predicted values for the next 'num_months' months
+    st.subheader(f"Predictions for the next {num_months} months:")
+    for date, pred in zip(next_dates, next_predictions):
+        st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
+
+    return
+
+if __name__ == "__main__":
     main()
-            # Plotting forecasted and actual values
-            st.subheader("Predictions:")
-            plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
-
-            # Print predicted values for the next 'num_months' months
-            st.subheader(f"Predictions for the next {num_months} months:")
-            for date, pred in zip(next_dates, next_predictions):
-                st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
-
             return
 
         # Predictions on actual data
