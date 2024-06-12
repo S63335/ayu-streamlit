@@ -569,29 +569,25 @@ elif menu == "Predictions":
             for _ in range(num_predictions):
                 # Reshape and inverse transform the predicted value
                 y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
-                predictions.append(y_pred)
+                predictions.append(y_pred.flatten()[0])  # Append the predicted value to the list
 
-            # Use the predicted value as input for the next prediction
-            next_data_point = y_pred.reshape(1, -1)
-            y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
+                # Use the predicted value as input for the next prediction
+                next_data_point = y_pred.reshape(1, -1)
+                y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
 
             # Convert predictions list to array for easier manipulation
             predictions = np.array(predictions)
 
             # Plotting the SVR prediction
             ax.plot(predictions, label='SVR Prediction', marker='x')
-            
-            st.write("Shape of predictions array:", predictions.shape)
 
         elif model_selection == "General Regression Neural Network (GRNN)":
             # Placeholder for GRNN implementation
             pass
         
-        st.write("Model Selection:", model_selection)
-
         # Plotting the forecasting values
-        for i in range(predictions.shape[0]):
-            ax.plot(len(y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
+        for i in range(num_predictions):
+            ax.plot(len(y) + i + 1, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
 
         # Adding labels and title
         ax.set_xlabel('Month')
@@ -613,4 +609,3 @@ elif menu == "About":
     st.write("""
     This application was created to forecast tourism numbers using various machine learning models.
     """)
-
