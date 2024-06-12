@@ -577,6 +577,10 @@ elif menu == "Predictions":
 
             # Convert predictions list to array for easier manipulation
             predictions = np.array(predictions)
+            
+            for i, pred in enumerate(predictions):
+                st.subheader("Prediction:")
+                st.write(f"Prediction:")
 
             # Plotting the SVR prediction
             ax.plot(y_pred_inv, label='SVR Prediction', marker='x')
@@ -605,6 +609,10 @@ elif menu == "Predictions":
 
             # Convert predictions list to array for easier manipulation
             predictions = np.array(predictions)
+
+            for i, pred in enumerate(predictions):
+                st.subheader("Prediction:")
+                st.write(f"Prediction:")
 
             # Plotting the GRNN prediction
             ax.plot(y_pred_inv, label='GRNN Prediction', marker='x')
