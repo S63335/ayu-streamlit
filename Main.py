@@ -591,50 +591,21 @@ elif menu == "Predictions":
     st.subheader("Prediction:")
     st.write(prediction)
 
+    # Plotting forecasted and actual values
+    plot_predictions(data_ts, prediction)
+
+    def plot_predictions(data_ts, prediction):
+        plt.figure(figsize=(12, 6))
+        plt.plot(data_ts['x'], data_ts['y'], label='Actual')
+        plt.scatter(data_ts['x'].iloc[-1], prediction, color='red', label='Forecast')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Forecasting')
+        plt.legend()
+        st.pyplot()
+        
 if __name__ == "__main__":
     main()
-
-        # Predictions on actual data
-        y_pred_scaled = model.predict(X_scaled)
-        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
-
-        # Input for the number of months to forecast
-        num_months = st.number_input("Enter the number of months to forecast:", min_value=1, max_value=50)
-
-        # Make predictions for the next 'num_months' months
-        last_date = df.index[-1]
-        next_dates = [last_date + pd.DateOffset(months=i) for i in range(1, num_months + 1)]
-        next_numeric_dates = np.array([date.toordinal() for date in next_dates]).reshape(-1, 1)
-
-        # Normalizing the prediction dates
-        next_numeric_dates_scaled = scaler_X.transform(next_numeric_dates)
-
-        # Predicting values for the next 'num_months' months
-        next_predictions_scaled = model.predict(next_numeric_dates_scaled)
-        next_predictions = scaler_y.inverse_transform(next_predictions_scaled.reshape(-1, 1)).ravel()
-
-        # Plotting forecasted and actual values
-        st.subheader("Predictions Graph:")
-        plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
-
-        # Print predicted values for the next 'num_months' months
-        st.subheader(f"Predictions for the next {num_months} months:")
-        for date, pred in zip(next_dates, next_predictions):
-            st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
-
-    def plot_predictions(df, y_pred, next_dates, next_predictions, num_months):
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(df.index, df['Actual'], label='Actual')
-        ax.plot(df.index, y_pred, label='Predictions', linestyle='--', color='blue')
-        ax.plot(next_dates, next_predictions, label='Future Predictions', linestyle='--', color='red')
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Tourism Numbers')
-        ax.set_title('Tourism Forecast')
-        ax.legend()
-        st.pyplot(fig)
-    if __name__ == "__main__":
-        main()
 
 elif menu == "About":
     st.header("About")
