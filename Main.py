@@ -624,8 +624,8 @@ elif menu == "Predictions":
         # Displaying the plot in Streamlit
         st.pyplot(fig)
         
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
 
 elif menu == "About":
     st.header("About")
