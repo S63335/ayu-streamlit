@@ -170,7 +170,7 @@ elif menu == "Model Training":
         plt.plot(y_train, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.write('Actual Data vs SVR Prediction')
+        st.header("Actual Data vs SVR Prediction (Train)")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
 
@@ -184,6 +184,8 @@ elif menu == "Model Training":
         from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
         import numpy as np
 
+        st.header("Value of Scale Test Data")
+        
         # Prediksi nilai untuk data latih
         y_pred_test = svr_model.predict(X_test_scaled)
 
@@ -203,6 +205,8 @@ elif menu == "Model Training":
         r2_test = r2_score(y_test_scaled, y_pred_test)
         st.write("R^2 (Test):", r2_test)
 
+        st.header("Value of non Scale Test Data")
+        
         y_pred_test_inv = scaler_y.inverse_transform(y_pred_test.reshape(-1,1))
         y_test_inv = scaler_y.inverse_transform(y_test_scaled.reshape(-1,1))
 
@@ -223,13 +227,14 @@ elif menu == "Model Training":
         st.write("R^2 (Test):", r2_test)
 
         import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
         # Membuat plot
         plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
         plt.plot(y_test, label='SVR Prediction', marker='x')
 
-        fig, ax = plt.subplots()
         # Menambahkan label sumbu dan judul
-        st.write('Actual Data vs SVR Prediction')
+        st.header("Actual Data vs SVR Prediction (Test)")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
         
@@ -238,7 +243,7 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
         x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
         y_pred = svr_model.predict(x_scaled)
