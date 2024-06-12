@@ -170,7 +170,7 @@ elif menu == "Model Training":
         plt.plot(y_train, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.header("Actual Data vs SVR Prediction (Train)")
+        st.header("Actual Data vs SVR Prediction (Train) Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
 
@@ -234,7 +234,7 @@ elif menu == "Model Training":
         plt.plot(y_test, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.header("Actual Data vs SVR Prediction (Test)")
+        st.header("Actual Data vs SVR Prediction (Test) Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
         
@@ -257,7 +257,7 @@ elif menu == "Model Training":
         plt.plot(y_pred_inv, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.header("ACtual vs SVR Prediction")
+        st.header("Actual vs SVR Prediction Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
     
@@ -304,6 +304,7 @@ elif menu == "Model Training":
         st.write(data_ts)
 
         #Split Data
+        import numpy as np
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
         X = np.array(data_ts['x'])
@@ -339,6 +340,8 @@ elif menu == "Model Training":
         from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
         import numpy as np
 
+        st.header("Value of Scale Train Data")
+        
         # Prediksi nilai untuk data latih
         y_pred_train = grnn_model.predict(X_train_scaled)
 
@@ -358,6 +361,8 @@ elif menu == "Model Training":
         r2_train = r2_score(y_train_scaled, y_pred_train)
         st.write("R^2 (Train):", r2_train)
 
+        st.header("Value of non Scale Train Data")
+        
         y_pred_train_inv = scaler_y.inverse_transform(y_pred_train.reshape(-1,1))
         y_train_inv = scaler_y.inverse_transform(y_train_scaled.reshape(-1,1))
 
@@ -378,12 +383,13 @@ elif menu == "Model Training":
         st.write("R^2 (Train):", r2_train)
 
         import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
         # Membuat plot
         plt.plot(y_pred_train_inv, label='Actual Data', marker='o')
         plt.plot(y_train, label='GRNN Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.write('Actual Data vs GRNN Prediction')
+        st.header("Actual Data vs GRNN Prediction (Train) Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
 
@@ -392,11 +398,13 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
         from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
         import numpy as np
 
+        st.header("Value of Scale Test Data")
+        
         # Prediksi nilai untuk data latih
         y_pred_test = grnn_model.predict(X_test_scaled)
 
@@ -416,6 +424,7 @@ elif menu == "Model Training":
         r2_test = r2_score(y_test_scaled, y_pred_test)
         st.write("R^2 (Test):", r2_test)
 
+        st.header("Value of non Scale Test Data")
         y_pred_test_inv = scaler_y.inverse_transform(y_pred_test.reshape(-1,1))
         y_test_inv = scaler_y.inverse_transform(y_test_scaled.reshape(-1,1))
 
@@ -436,12 +445,13 @@ elif menu == "Model Training":
         st.write("R^2 (Test):", r2_test)
 
         import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
         # Membuat plot
         plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
         plt.plot(y_test, label='GRNN Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.write('Actual Data vs GRNN Prediction')
+        st.header("Actual Data vs GRNN Prediction (Test) Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
 
@@ -450,12 +460,13 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
         x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
         y_pred = grnn_model.predict(x_scaled)
 
         import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
         y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
 
         # Membuat plot
@@ -463,7 +474,7 @@ elif menu == "Model Training":
         plt.plot(y_pred_inv, label='GRNN Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
-        st.write('Actual Data vs GRNN Prediction')
+        st.header("Actual Data vs GRNN Prediction Graph")
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
 
@@ -472,7 +483,7 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
 
     if __name__ == "__main__":
