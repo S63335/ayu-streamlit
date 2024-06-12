@@ -584,17 +584,17 @@ elif menu == "Predictions":
 
             # Predict 6 new data points
             for _ in range(15):
-            # Reshape and inverse transform the predicted value
-            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
-            predictions.append(y_pred)
+                # Reshape and inverse transform the predicted value
+                y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
+                predictions.append(y_pred)
 
-            # Use the predicted value as input for the next prediction
-            next_data_point = y_pred.reshape(1, -1)
-            y_pred_scaled = grnn_model.predict(scaler_X.transform(next_data_point))
+                # Use the predicted value as input for the next prediction
+                next_data_point = y_pred.reshape(1, -1)
+                y_pred_scaled = grnn_model.predict(scaler_X.transform(next_data_point))
 
-            # Print the predictions
+                # Print the predictions
             for i, pred in enumerate(predictions):
-            st.write(f"Prediction {i+1}: {pred[0][0]}")
+                st.write(f"Prediction {i+1}: {pred[0][0]}")
 
             # Plotting forecasted and actual values
             st.subheader("Predictions:")
