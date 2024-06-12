@@ -613,16 +613,16 @@ elif menu == "Predictions":
         for i in range(predictions.shape[0]):
             ax.plot(len(Y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
 
-    # Adding labels and title
-    ax.set_xlabel('Month')
-    ax.set_ylabel('Tourism Data')
-    ax.set_title('Actual Data vs Model Prediction & Forecasting')
+        # Adding labels and title
+        ax.set_xlabel('Month')
+        ax.set_ylabel('Tourism Data')
+        ax.set_title('Actual Data vs Model Prediction & Forecasting')
 
-    # Adding legend
-    ax.legend()
+        # Adding legend
+        ax.legend()
 
-    # Displaying the plot in Streamlit
-    st.pyplot(fig)
+        # Displaying the plot in Streamlit
+        st.pyplot(fig)
         
     if __name__ == "__main__":
         main()
