@@ -121,6 +121,8 @@ elif menu == "Model Training":
         from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
         import numpy as np
 
+        st.header("Value of Scale Train Data")
+        
         # Prediksi nilai untuk data latih
         y_pred_train = svr_model.predict(X_train_scaled)
 
@@ -140,6 +142,8 @@ elif menu == "Model Training":
         r2_train = r2_score(y_train_scaled, y_pred_train)
         st.write("R^2 (Train):", r2_train)
 
+        st.header("Value of non Scale Train Data")
+        
         y_pred_train_inv = scaler_y.inverse_transform(y_pred_train.reshape(-1,1))
         y_train_inv = scaler_y.inverse_transform(y_train_scaled.reshape(-1,1))
 
@@ -174,7 +178,7 @@ elif menu == "Model Training":
 
         # Menampilkan plot
         plt.grid(True)
-        st.pyplot()
+        st.pyplot(fig)
 
         from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
         import numpy as np
