@@ -497,44 +497,72 @@ elif menu == "Predictions":
         st.title("Inbound Tourism Forecasting")
 
         # Read data from CSV file
-        df = pd.read_csv('Malaysia-Tourism.csv')
+        df = pd.read_csv('Malaysia-Tourism1.csv')
 
         # Show data
         st.subheader("Data:")
         st.write(df.head())
 
-        # Convert 'Date' column to datetime format with dayfirst=True
-        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
+               df.isnull().sum()
 
-        # Set 'Date' as index
-        df.set_index('Date', inplace=True)
+        data = df.drop(['Date'], axis=1)
+        data.head()
 
-        # Prepare data for model
-        # Convert Date to numerical value because the model cannot work with datetime type directly
-        df['NumericDate'] = df.index.map(pd.Timestamp.toordinal)
+        #Time Series Generator
+        #Choose input and output
+        n_input = 1
+        n_output = 1
 
-        # Features and target
-        X = df['NumericDate'].values.reshape(-1, 1)
-        y = df['Actual'].values
+        # Membuat TimeseriesGenerator
+        generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
 
-        # Feature scaling
-        scaler_X = StandardScaler()
-        scaler_y = StandardScaler()
+        # Membuat DataFrame untuk menyimpan hasil
+        data_ts = pd.DataFrame(columns=['x', 'y'])
 
-        X_scaled = scaler_X.fit_transform(X)
-        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).ravel()
+        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
+        for i in range(len(generator)):
+            x, y = generator[i]
+            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+            data_ts = pd.concat([data_ts, df], ignore_index=True)
+            
+        st.header("- Train Data")
+        st.write(data_ts)
 
+        #Split Data
+
+        import numpy as np
+        
+        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
+
+        X = np.array(data_ts['x'])
+        Y = np.array(data_ts['y'])
+
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+        X_train = X_train.reshape(-1,1)
+        y_train = y_train.reshape(-1,1)
+
+        X_test = X_test.reshape(-1,1)
+        y_test = y_test.reshape(-1,1)
+
+        #Scaling Dataset
+        scaler_X = MinMaxScaler()
+        scaler_y = MinMaxScaler()
+
+        X_train_scaled = scaler_X.fit_transform(X_train)
+        y_train_scaled = scaler_y.fit_transform(y_train)
+
+        X_test_scaled = scaler_X.fit_transform(X_test)
+        y_test_scaled = scaler_y.fit_transform(y_test)
+        
         # Display "Select Model:" as a header
         st.subheader("Select Model:")
         # Model selection using radio button
         model_selection = st.radio("", ("Support Vector Regression (SVR)", "General Regression Neural Network (GRNN)"))
 
         if model_selection == "Support Vector Regression (SVR)":
-            # Initialize SVR model
-            model = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
-
-            # Fit the SVR model
-            model.fit(X_scaled, y_scaled)
+            # Initialize and fit the SVR model
+            svr_model = SVR(kernel='rbf')
+            svr_model.fit(X_train_scaled, y_train_scaled)
 
         elif model_selection == "General Regression Neural Network (GRNN)":
             # Predictions on actual data using GRNN
