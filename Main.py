@@ -581,9 +581,9 @@ elif menu == "Predictions":
         # Plotting the SVR prediction
         ax.plot(predictions, label='SVR Prediction', marker='x')
 
-        elif model_selection == "General Regression Neural Network (GRNN)":
-            # Placeholder for GRNN implementation
-            pass
+    elif model_selection == "General Regression Neural Network (GRNN)":
+        # Placeholder for GRNN implementation
+        pass
         
     st.write("Model Selection:", model_selection)
 
