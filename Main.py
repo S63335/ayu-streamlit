@@ -503,7 +503,7 @@ elif menu == "Predictions":
         st.subheader("Data:")
         st.write(df.head())
 
-               df.isnull().sum()
+        df.isnull().sum()
 
         data = df.drop(['Date'], axis=1)
         data.head()
@@ -565,24 +565,36 @@ elif menu == "Predictions":
             svr_model.fit(X_train_scaled, y_train_scaled)
 
         elif model_selection == "General Regression Neural Network (GRNN)":
-            # Predictions on actual data using GRNN
-            y_pred_scaled = grnn_predict(X_scaled, y_scaled, X_scaled)
-            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
+            from pyGRNN import GRNN
+
+            # Initialize and fit the GRNN model
+            grnn_model = GRNN(calibration="None")
+            grnn_model.fit(X_train_scaled, y_train_scaled)
+
+            # Prediksi nilai untuk data latih
+            y_pred_train = grnn_model.predict(X_train_scaled)
 
             # Input for the number of months to forecast
             num_months = st.number_input("Enter the number of months to forecast:", min_value=1, max_value=50)
 
-            # Make predictions for the next 'num_months' months
-            last_date = df.index[-1]
-            next_dates = [last_date + pd.DateOffset(months=i) for i in range(1, num_months + 1)]
-            next_numeric_dates = np.array([date.toordinal() for date in next_dates]).reshape(-1, 1)
+           # Initial prediction using the last known data point
+            last_data_point = X[-1].reshape(1, -1)
+            y_pred_scaled = grnn_model.predict(scaler_X.transform(last_data_point))
+            predictions = []
 
-            # Normalizing the prediction dates
-            next_numeric_dates_scaled = scaler_X.transform(next_numeric_dates)
+            # Predict 6 new data points
+            for _ in range(15):
+            # Reshape and inverse transform the predicted value
+            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
+            predictions.append(y_pred)
 
-            # Predicting values for the next 'num_months' months using GRNN
-            next_predictions_scaled = grnn_predict(X_scaled, y_scaled, next_numeric_dates_scaled)
-            next_predictions = scaler_y.inverse_transform(next_predictions_scaled.reshape(-1, 1)).ravel()
+            # Use the predicted value as input for the next prediction
+            next_data_point = y_pred.reshape(1, -1)
+            y_pred_scaled = grnn_model.predict(scaler_X.transform(next_data_point))
+
+            # Print the predictions
+            for i, pred in enumerate(predictions):
+            st.write(f"Prediction {i+1}: {pred[0][0]}")
 
             # Plotting forecasted and actual values
             st.subheader("Predictions:")
