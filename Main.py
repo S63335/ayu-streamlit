@@ -587,24 +587,12 @@ elif menu == "Predictions":
         prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
         prediction = scaler_y.inverse_transform(prediction_scaled)
 
-        # Display the prediction
-        st.subheader("Prediction:")
-        st.write(prediction)
-
-        # Plotting forecasted and actual values
-        st.subheader("Predictions:")
-        plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
-
-        # Print predicted values for the next 'num_months' months
-        st.subheader(f"Predictions for the next {num_months} months:")
-        for date, pred in zip(next_dates, next_predictions):
-            st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
-
-    return
+    # Display the prediction
+    st.subheader("Prediction:")
+    st.write(prediction)
 
 if __name__ == "__main__":
     main()
-            return
 
         # Predictions on actual data
         y_pred_scaled = model.predict(X_scaled)
