@@ -555,52 +555,52 @@ elif menu == "Predictions":
         # Model selection using radio button
         model_selection = st.radio("", ("Support Vector Regression (SVR)", "General Regression Neural Network (GRNN)"))
 
-    if model_selection == "Support Vector Regression (SVR)":
-        # Initialize and fit the SVR model
-        svr_model = SVR(kernel='rbf')
-        svr_model.fit(X_train_scaled, y_train_scaled)
+        if model_selection == "Support Vector Regression (SVR)":
+            # Initialize and fit the SVR model
+            svr_model = SVR(kernel='rbf')
+            svr_model.fit(X_train_scaled, y_train_scaled)
 
-        # Initial prediction using the last known data point
-        last_data_point = X[-1].reshape(1, -1)
-        y_pred_scaled = svr_model.predict(scaler_X.transform(last_data_point))
-        predictions = []
+            # Initial prediction using the last known data point
+            last_data_point = X[-1].reshape(1, -1)
+            y_pred_scaled = svr_model.predict(scaler_X.transform(last_data_point))
+            predictions = []
 
-        # Predict new data points based on user input
-        for _ in range(num_predictions):
-            # Reshape and inverse transform the predicted value
-            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
-            predictions.append(y_pred)
+            # Predict new data points based on user input
+            for _ in range(num_predictions):
+                # Reshape and inverse transform the predicted value
+                y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
+                predictions.append(y_pred)
 
-        # Use the predicted value as input for the next prediction
-        next_data_point = y_pred.reshape(1, -1)
-        y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
+            # Use the predicted value as input for the next prediction
+            next_data_point = y_pred.reshape(1, -1)
+            y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
 
-        # Convert predictions list to array for easier manipulation
-        predictions = np.array(predictions)
+            # Convert predictions list to array for easier manipulation
+            predictions = np.array(predictions)
 
-        # Plotting the SVR prediction
-        ax.plot(predictions, label='SVR Prediction', marker='x')
+            # Plotting the SVR prediction
+            ax.plot(predictions, label='SVR Prediction', marker='x')
 
-    elif model_selection == "General Regression Neural Network (GRNN)":
-        # Placeholder for GRNN implementation
-        pass
+        elif model_selection == "General Regression Neural Network (GRNN)":
+            # Placeholder for GRNN implementation
+            pass
         
-    st.write("Model Selection:", model_selection)
+        st.write("Model Selection:", model_selection)
 
-    # Plotting the forecasting values
-    for i in range(predictions.shape[0]):
-        ax.plot(len(y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
+        # Plotting the forecasting values
+        for i in range(predictions.shape[0]):
+            ax.plot(len(y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
 
-    # Adding labels and title
-    ax.set_xlabel('Month')
-    ax.set_ylabel('Tourism Data')
-    ax.set_title('Actual Data vs Model Prediction & Forecasting')
+        # Adding labels and title
+        ax.set_xlabel('Month')
+        ax.set_ylabel('Tourism Data')
+        ax.set_title('Actual Data vs Model Prediction & Forecasting')
 
-    # Adding legend
-    ax.legend()
+        # Adding legend
+        ax.legend()
 
-    # Displaying the plot in Streamlit
-    st.pyplot(fig)
+        # Displaying the plot in Streamlit
+        st.pyplot(fig)
 
 if __name__ == "__main__":
     main()
