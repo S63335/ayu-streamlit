@@ -541,6 +541,15 @@ elif menu == "Predictions":
     X_train_scaled = scaler_X.fit_transform(X_train)
     y_train_scaled = scaler_y.fit_transform(y_train)
 
+    # User input for the number of predicted values
+    num_predictions = st.number_input("Enter the number of predicted values (1-50)", min_value=1, max_value=50, value=15)
+
+    # Create a new figure
+    fig, ax = plt.subplots()
+
+    # Plotting the actual data
+    ax.plot(Y, label='Actual Data', marker='o')
+
     # Display "Select Model:" as a header
     st.subheader("Select Model:")
     # Model selection using radio button
@@ -551,14 +560,26 @@ elif menu == "Predictions":
         svr_model = SVR(kernel='rbf')
         svr_model.fit(X_train_scaled, y_train_scaled)
 
-        # User input for prediction
-        user_input = st.number_input("Enter the value for prediction:", min_value=1)
+        # Initial prediction using the last known data point
+        last_data_point = X[-1].reshape(1, -1)
+        y_pred_scaled = svr_model.predict(scaler_X.transform(last_data_point))
+        predictions = []
 
-        # Perform prediction
-        prediction_scaled = svr_model.predict(scaler_X.transform([[user_input]]))
-        # Reshape the prediction_scaled array to be 2D
-        prediction_scaled = prediction_scaled.reshape(-1, 1)
-        prediction = scaler_y.inverse_transform(prediction_scaled)
+        # Predict new data points based on user input
+        for _ in range(num_predictions):
+            # Reshape and inverse transform the predicted value
+            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
+            predictions.append(y_pred)
+
+            # Use the predicted value as input for the next prediction
+            next_data_point = y_pred.reshape(1, -1)
+            y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
+
+        # Convert predictions list to array for easier manipulation
+        predictions = np.array(predictions)
+
+        # Plotting the SVR prediction
+        ax.plot(y_pred_inv, label='SVR Prediction', marker='x')
 
     elif model_selection == "General Regression Neural Network (GRNN)":
         from pyGRNN import GRNN
@@ -567,29 +588,41 @@ elif menu == "Predictions":
         grnn_model = GRNN(calibration="None")
         grnn_model.fit(X_train_scaled, y_train_scaled)
 
-        # User input for prediction
-        user_input = st.number_input("Enter the value for prediction:", min_value=1)
+        # Initial prediction using the last known data point
+        last_data_point = X[-1].reshape(1, -1)
+        y_pred_scaled = grnn_model.predict(scaler_X.transform(last_data_point))
+        predictions = []
 
-        # Perform prediction
-        prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
-        prediction = scaler_y.inverse_transform(prediction_scaled)
+        # Predict new data points based on user input
+        for _ in range(num_predictions):
+            # Reshape and inverse transform the predicted value
+            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
+            predictions.append(y_pred)
 
-    # Display the prediction
-    st.subheader("Prediction:")
-    st.write(prediction)
+            # Use the predicted value as input for the next prediction
+            next_data_point = y_pred.reshape(1, -1)
+            y_pred_scaled = grnn_model.predict(scaler_X.transform(next_data_point))
 
-    # Plotting forecasted and actual values
-    plot_predictions(data_ts, prediction)
+        # Convert predictions list to array for easier manipulation
+        predictions = np.array(predictions)
 
-def plot_predictions(data_ts, prediction):
-    plt.figure(figsize=(12, 6))
-    plt.plot(data_ts['x'], data_ts['y'], label='Actual')
-    plt.scatter(data_ts['x'].iloc[-1], prediction, color='red', label='Forecast')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Forecasting')
-    plt.legend()
-    st.pyplot()
+        # Plotting the GRNN prediction
+        ax.plot(y_pred_inv, label='GRNN Prediction', marker='x')
+
+    # Plotting the forecasting values
+    for i in range(predictions.shape[0]):
+        ax.plot(len(Y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
+
+# Adding labels and title
+ax.set_xlabel('Month')
+ax.set_ylabel('Tourism Data')
+ax.set_title('Actual Data vs Model Prediction & Forecasting')
+
+# Adding legend
+ax.legend()
+
+# Displaying the plot in Streamlit
+st.pyplot(fig)
         
 if __name__ == "__main__":
     main()
