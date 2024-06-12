@@ -508,8 +508,8 @@ elif menu == "Predictions":
         data = df.drop(['Date'], axis=1)
         data.head()
 
-        #Time Series Generator
-        #Choose input and output
+        # Time Series Generator
+        # Choose input and output
         n_input = 1
         n_output = 1
 
@@ -524,27 +524,29 @@ elif menu == "Predictions":
             x, y = generator[i]
             df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
             data_ts = pd.concat([data_ts, df], ignore_index=True)
-            
+
         st.header("- Train Data")
         st.write(data_ts)
 
-        #Split Data
-
+        # Split Data
         import numpy as np
-        
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import MinMaxScaler
+        from sklearn.svm import SVR
+
         data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
         X = np.array(data_ts['x'])
         Y = np.array(data_ts['y'])
 
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-        X_train = X_train.reshape(-1,1)
-        y_train = y_train.reshape(-1,1)
+        X_train = X_train.reshape(-1, 1)
+        y_train = y_train.reshape(-1, 1)
 
-        X_test = X_test.reshape(-1,1)
-        y_test = y_test.reshape(-1,1)
+        X_test = X_test.reshape(-1, 1)
+        y_test = y_test.reshape(-1, 1)
 
-        #Scaling Dataset
+        # Scaling Dataset
         scaler_X = MinMaxScaler()
         scaler_y = MinMaxScaler()
 
@@ -553,7 +555,7 @@ elif menu == "Predictions":
 
         X_test_scaled = scaler_X.fit_transform(X_test)
         y_test_scaled = scaler_y.fit_transform(y_test)
-        
+
         # Display "Select Model:" as a header
         st.subheader("Select Model:")
         # Model selection using radio button
@@ -564,6 +566,13 @@ elif menu == "Predictions":
             svr_model = SVR(kernel='rbf')
             svr_model.fit(X_train_scaled, y_train_scaled)
 
+            # User input for prediction
+            user_input = st.number_input("Enter the value for prediction:", min_value=0.0)
+
+            # Perform prediction
+            prediction_scaled = svr_model.predict(scaler_X.transform([[user_input]]))
+            prediction = scaler_y.inverse_transform(prediction_scaled)
+
         elif model_selection == "General Regression Neural Network (GRNN)":
             from pyGRNN import GRNN
 
@@ -571,31 +580,18 @@ elif menu == "Predictions":
             grnn_model = GRNN(calibration="None")
             grnn_model.fit(X_train_scaled, y_train_scaled)
 
-            # Prediksi nilai untuk data latih
-            y_pred_train = grnn_model.predict(X_train_scaled)
+            # User input for prediction
+            user_input = st.number_input("Enter the value for prediction:", min_value=0.0)
 
-            # Input for the number of months to forecast
-            num_months = st.number_input("Enter the number of months to forecast:", min_value=1, max_value=50)
+            # Perform prediction
+            prediction_scaled = grnn_model.predict(scaler_X.transform([[user_input]]))
+            prediction = scaler_y.inverse_transform(prediction_scaled)
 
-           # Initial prediction using the last known data point
-            last_data_point = X[-1].reshape(1, -1)
-            y_pred_scaled = grnn_model.predict(scaler_X.transform(last_data_point))
-            predictions = []
+        # Display the prediction
+        st.subheader("Prediction:")
+        st.write(prediction)
 
-            # Predict 6 new data points
-            for _ in range(15):
-                # Reshape and inverse transform the predicted value
-                y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
-                predictions.append(y_pred)
-
-                # Use the predicted value as input for the next prediction
-                next_data_point = y_pred.reshape(1, -1)
-                y_pred_scaled = grnn_model.predict(scaler_X.transform(next_data_point))
-
-                # Print the predictions
-            for i, pred in enumerate(predictions):
-                st.write(f"Prediction {i+1}: {pred[0][0]}")
-
+    main()
             # Plotting forecasted and actual values
             st.subheader("Predictions:")
             plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
