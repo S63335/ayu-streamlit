@@ -169,6 +169,7 @@ elif menu == "Model Training":
         plt.plot(y_train, label='SVR Prediction', marker='x')
 
         # Menambahkan label sumbu dan judul
+        fig, ax = plt.subplots()
         st.write('Actual Data vs SVR Prediction')
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
@@ -226,12 +227,12 @@ elif menu == "Model Training":
         plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
         plt.plot(y_test, label='SVR Prediction', marker='x')
 
+        fig, ax = plt.subplots()
         # Menambahkan label sumbu dan judul
         st.write('Actual Data vs SVR Prediction')
         plt.xlabel('Month')
         plt.ylabel('Tourism Data')
-
-
+        
         # Menambahkan legenda
         plt.legend()
 
