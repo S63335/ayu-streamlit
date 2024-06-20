@@ -8,6 +8,8 @@ from sklearn.svm import SVR
 from pyGRNN import GRNN
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
+import tensorflow as tf
+
 
 # Title of the application
 st.title(" TourVis Pro: Predictive Analytics for Tourism 📊 ")
