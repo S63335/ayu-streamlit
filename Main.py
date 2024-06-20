@@ -1,14 +1,14 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
+import torch
+from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 from pyGRNN import GRNN
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
-import tensorflow as tf
 
 
 # Title of the application
