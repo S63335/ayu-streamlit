@@ -1,16 +1,17 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from tensorflow.keras.models import load_model
+import pandas as pd
 from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
+from pyGRNN import GRNN
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib.pyplot as plt
+
 
 # Title of the application
-st.title("TourVis Pro: Predictive Analytics for Tourism 📊")
+st.title(" TourVis Pro: Predictive Analytics for Tourism 📊 ")
 
 # Main menu bar on the sidebar
 st.sidebar.title("Main Menu")
@@ -23,7 +24,7 @@ menu = st.sidebar.radio(
 
 # Display content based on the selected menu item
 if menu == "Home":
-    st.header("Welcome to SVR & GRNN Web-based App! 👋")
+    st.header(" Welcome to SVR & GRNN Web-based App! 👋 ")
 
     col1, col2 = st.columns([1, 2])  # Split the page into 1/4 and 3/4
 
@@ -39,116 +40,557 @@ if menu == "Home":
             """
         )
 
-elif menu == "Predictions":
+elif menu == "Data Overview":
+    st.header(" Data Overview 📈 ")
+    st.write("Here you can see the overview of the data used for forecasting from 2011 to 2023.")
 
-    # Function to load the model
-    @st.cache(allow_output_mutation=True)
-    def load_trained_model(model_path):
-        model = load_model(model_path)
-        return model
+    col1, col2 = st.columns([1, 2])  # Split the page into 1/4 and 3/4
 
+    with col1:
+        # Load and display your dataset here
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        st.dataframe(df)
+
+    with col2:
+        st.image("Data Animation.gif", width=400)
+
+elif menu == "Model Training":
+    # Add your model training code here
     def main():
-        st.title("Inbound Tourism Forecasting")
+        st.title(" 1) Inbound Tourism using SVR ")
 
-        # Read data from CSV file
-        df = pd.read_csv('Malaysia-Tourism1.csv')
+        #Reading the csv file
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df
 
-        # Show data
-        st.subheader("Data:")
-        st.write(df.head())
+        df.isnull().sum()
 
-        # Check for missing values
-        if df.isnull().sum().sum() > 0:
-            st.warning("Data contains missing values. Please handle them before proceeding.")
-            return
-
-        # Drop the Date column
         data = df.drop(['Date'], axis=1)
+        data.head()
 
-        # Time Series Generator
+        #Time Series Generator
+        #Choose input and output
         n_input = 1
         n_output = 1
+
+        # Membuat TimeseriesGenerator
         generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
 
-        # Create a DataFrame for the time series data
+        # Membuat DataFrame untuk menyimpan hasil
         data_ts = pd.DataFrame(columns=['x', 'y'])
+
+        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
         for i in range(len(generator)):
             x, y = generator[i]
-            df_temp = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
-            data_ts = pd.concat([data_ts, df_temp], ignore_index=True)
+            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+            data_ts = pd.concat([data_ts, df], ignore_index=True)
 
-        st.header("Train Data")
+        # Menampilkan DataFrame hasil
         st.write(data_ts)
 
-        # Split Data
-        X = data_ts['x'].values.reshape(-1, 1)
-        y = data_ts['y'].values.reshape(-1, 1)
+        #Split Data
+        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X = np.array(data_ts['x'])
+        Y = np.array(data_ts['y'])
 
-        # Scaling Dataset
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+        X_train = X_train.reshape(-1,1)
+        y_train = y_train.reshape(-1,1)
+
+        X_test = X_test.reshape(-1,1)
+        y_test = y_test.reshape(-1,1)
+
+        #Scaling Dataset
         scaler_X = MinMaxScaler()
         scaler_y = MinMaxScaler()
 
         X_train_scaled = scaler_X.fit_transform(X_train)
         y_train_scaled = scaler_y.fit_transform(y_train)
 
-        # User input for the number of predicted values
-        num_predictions = st.number_input("Enter the number of predicted values (1-50)", min_value=1, max_value=50, value=15)
+        X_test_scaled = scaler_X.fit_transform(X_test)
+        y_test_scaled = scaler_y.fit_transform(y_test)
 
-        # Create a new figure
-        fig, ax = plt.subplots()
+        # Initialize and fit the SVR model
+        svr_model = SVR(kernel='rbf')
+        svr_model.fit(X_train_scaled, y_train_scaled)
 
-        # Plotting the actual data
-        ax.plot(y, label='Actual Data', marker='o')
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = svr_model.predict(X_train_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_scaled, y_pred_train)
+        st.write("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_scaled, y_pred_train)
+        st.write("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_scaled, y_pred_train)
+        st.write("R^2 (Train):", r2_train)
+
+        y_pred_train_inv = scaler_y.inverse_transform(y_pred_train.reshape(-1,1))
+        y_train_inv = scaler_y.inverse_transform(y_train_scaled.reshape(-1,1))
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_inv, y_pred_train_inv)
+        st.write("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_inv, y_pred_train_inv)
+        st.write("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_inv, y_pred_train_inv)
+        st.write("R^2 (Train):", r2_train)
+        
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_train_inv, label='Actual Data', marker='o')
+        plt.plot(y_train, label='SVR Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs SVR Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_test = svr_model.predict(X_test_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_scaled, y_pred_test)
+        st.write("Mean Squared Error (Test):", mse_test)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Test):", rmse_test)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_scaled, y_pred_test)
+        st.write("Mean Absolute Error (Test):", mae_test)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_scaled, y_pred_test)
+        st.write("R^2 (Test):", r2_test)
+
+        y_pred_test_inv = scaler_y.inverse_transform(y_pred_test.reshape(-1,1))
+        y_test_inv = scaler_y.inverse_transform(y_test_scaled.reshape(-1,1))
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_inv, y_pred_test_inv)
+        print("Mean Squared Error (Test):", mse_test)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_test)
+        print("Root Mean Squared Error (Test):", rmse_test)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_inv, y_pred_test_inv)
+        print("Mean Absolute Error (Test):", mae_test)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_inv, y_pred_test_inv)
+        print("R^2 (Test):", r2_test)
+
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
+        plt.plot(y_test, label='SVR Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs SVR Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+        x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
+        y_pred = svr_model.predict(x_scaled)
+
+        import matplotlib.pyplot as plt
+        y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
+
+        # Membuat plot
+        plt.plot(Y, label='Actual Data', marker='o')
+        plt.plot(y_pred_inv, label='SVR Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('ACtual vs SVR Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+        plt.title('ACtual vs SVR Prediction')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+    if __name__ == "__main__":
+        main()
+
+    def main():
+        st.title(" 2) Inbound Tourism using GRNN ")
+
+         #Reading the csv file
+        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df
+
+        df.isnull().sum()
+
+        data = df.drop(['Date'], axis=1)
+        data.head()
+
+        #Time Series Generator
+        #Choose input and output
+        n_input = 1
+        n_output = 1
+
+        # Membuat TimeseriesGenerator
+        generator = TimeseriesGenerator(data.values, data.values, length=n_input, batch_size=1)
+
+        # Membuat DataFrame untuk menyimpan hasil
+        data_ts = pd.DataFrame(columns=['x', 'y'])
+
+        # Menyimpan hasil dari TimeseriesGenerator ke dalam DataFrame
+        for i in range(len(generator)):
+            x, y = generator[i]
+            df = pd.DataFrame({'x': x.flatten(), 'y': y.flatten()})
+            data_ts = pd.concat([data_ts, df], ignore_index=True)
+
+        # Menampilkan DataFrame hasil
+        st.write(data_ts)
+
+        #Split Data
+        data_ts[['x', 'y']] = data_ts[['x', 'y']].astype(int)
+
+        X = np.array(data_ts['x'])
+        Y = np.array(data_ts['y'])
+
+        X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+        X_train = X_train.reshape(-1,1)
+        y_train = y_train.reshape(-1,1)
+
+        X_test = X_test.reshape(-1,1)
+        y_test = y_test.reshape(-1,1)
+
+        #Scaling Dataset
+        scaler_X = MinMaxScaler()
+        scaler_y = MinMaxScaler()
+
+        X_train_scaled = scaler_X.fit_transform(X_train)
+        y_train_scaled = scaler_y.fit_transform(y_train)
+
+        X_test_scaled = scaler_X.fit_transform(X_test)
+        y_test_scaled = scaler_y.fit_transform(y_test)
+
+        from pyGRNN import GRNN
+
+        # Initialize and fit the GRNN model
+        grnn_model = GRNN(calibration="None")
+        grnn_model.fit(X_train_scaled, y_train_scaled)
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = grnn_model.predict(X_train_scaled)
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_train = grnn_model.predict(X_train_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_scaled, y_pred_train)
+        st.write("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_scaled, y_pred_train)
+        st.write("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_scaled, y_pred_train)
+        st.write("R^2 (Train):", r2_train)
+
+        y_pred_train_inv = scaler_y.inverse_transform(y_pred_train.reshape(-1,1))
+        y_train_inv = scaler_y.inverse_transform(y_train_scaled.reshape(-1,1))
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_train = mean_squared_error(y_train_inv, y_pred_train_inv)
+        st.write("Mean Squared Error (Train):", mse_train)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_train = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Train):", rmse_train)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_train = mean_absolute_error(y_train_inv, y_pred_train_inv)
+        st.write("Mean Absolute Error (Train):", mae_train)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_train = r2_score(y_train_inv, y_pred_train_inv)
+        st.write("R^2 (Train):", r2_train)
+
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_train_inv, label='Actual Data', marker='o')
+        plt.plot(y_train, label='GRNN Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs GRNN Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+        from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+        import numpy as np
+
+        # Prediksi nilai untuk data latih
+        y_pred_test = grnn_model.predict(X_test_scaled)
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_scaled, y_pred_test)
+        st.write("Mean Squared Error (Test):", mse_test)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_train)
+        st.write("Root Mean Squared Error (Test):", rmse_test)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_scaled, y_pred_test)
+        st.write("Mean Absolute Error (Test):", mae_test)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_scaled, y_pred_test)
+        st.write("R^2 (Test):", r2_test)
+
+        y_pred_test_inv = scaler_y.inverse_transform(y_pred_test.reshape(-1,1))
+        y_test_inv = scaler_y.inverse_transform(y_test_scaled.reshape(-1,1))
+
+        # Menghitung Mean Squared Error (MSE) untuk data latih
+        mse_test = mean_squared_error(y_test_inv, y_pred_test_inv)
+        st.write("Mean Squared Error (Test):", mse_test)
+
+        # Menghitung Root Mean Squared Error (RMSE) untuk data latih
+        rmse_test = np.sqrt(mse_test)
+        st.write("Root Mean Squared Error (Test):", rmse_test)
+
+        # Menghitung Mean Absolute Error (MAE) untuk data latih
+        mae_test = mean_absolute_error(y_test_inv, y_pred_test_inv)
+        st.write("Mean Absolute Error (Test):", mae_test)
+
+        # Menghitung Koefisien Determinasi (R^2) untuk data latih
+        r2_test = r2_score(y_test_inv, y_pred_test_inv)
+        st.write("R^2 (Test):", r2_test)
+
+        import matplotlib.pyplot as plt
+        # Membuat plot
+        plt.plot(y_pred_test_inv, label='Actual Data', marker='o')
+        plt.plot(y_test, label='GRNN Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs GRNN Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+        x_scaled = scaler_X.fit_transform(X.reshape(-1,1))
+        y_pred = grnn_model.predict(x_scaled)
+
+        import matplotlib.pyplot as plt
+        y_pred_inv = scaler_y.inverse_transform(y_pred.reshape(-1,1))
+
+        # Membuat plot
+        plt.plot(Y, label='Actual Data', marker='o')
+        plt.plot(y_pred_inv, label='GRNN Prediction', marker='x')
+
+        # Menambahkan label sumbu dan judul
+        st.write('Actual Data vs GRNN Prediction')
+        plt.xlabel('Month')
+        plt.ylabel('Tourism Data')
+
+        # Menambahkan legenda
+        plt.legend()
+
+        # Menampilkan plot
+        plt.grid(True)
+        st.pyplot()
+
+    if __name__ == "__main__":
+        main()
+
+elif menu == "Predictions":
+
+    def grnn_predict(X_train, y_train, X_test, sigma=0.1):
+        # Calculate the Gaussian kernel
+        diff = X_train - X_test[:, np.newaxis]
+        distance = np.exp(-np.sum(diff ** 2, axis=2) / (2 * sigma ** 2))
+    
+        # Calculate the output using the kernel
+        output = np.sum(distance * y_train, axis=1, keepdims=True) / np.sum(distance, axis=1, keepdims=True)
+    
+        return output
+
+    def main():
+        st.title("Inbound Tourism Forecasting")
+
+        # Read data from CSV file
+        df = pd.read_csv('Malaysia-Tourism.csv')
+
+        # Show data
+        st.subheader("Data:")
+        st.write(df.head())
+
+        # Convert 'Date' column to datetime format with dayfirst=True
+        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True)
+
+        # Set 'Date' as index
+        df.set_index('Date', inplace=True)
+
+        # Prepare data for model
+        # Convert Date to numerical value because the model cannot work with datetime type directly
+        df['NumericDate'] = df.index.map(pd.Timestamp.toordinal)
+
+        # Features and target
+        X = df['NumericDate'].values.reshape(-1, 1)
+        y = df['Actual'].values
+
+        # Feature scaling
+        scaler_X = StandardScaler()
+        scaler_y = StandardScaler()
+
+        X_scaled = scaler_X.fit_transform(X)
+        y_scaled = scaler_y.fit_transform(y.reshape(-1, 1)).ravel()
 
         # Display "Select Model:" as a header
         st.subheader("Select Model:")
         # Model selection using radio button
         model_selection = st.radio("", ("Support Vector Regression (SVR)", "General Regression Neural Network (GRNN)"))
 
-        predictions = []
-
         if model_selection == "Support Vector Regression (SVR)":
-            # Initialize and fit the SVR model
-            svr_model = SVR(kernel='rbf')
-            svr_model.fit(X_train_scaled, y_train_scaled.ravel())
+            # Initialize SVR model
+            model = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
 
-            # Initial prediction using the last known data point
-            last_data_point = X[-1].reshape(1, -1)
-            y_pred_scaled = svr_model.predict(scaler_X.transform(last_data_point))
-
-            # Predict new data points based on user input
-            for _ in range(num_predictions):
-                y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1))
-                predictions.append(y_pred.flatten()[0])
-                next_data_point = y_pred.reshape(1, -1)
-                y_pred_scaled = svr_model.predict(scaler_X.transform(next_data_point))
-
-            predictions = np.array(predictions)
-
-            # Plotting the SVR prediction
-            ax.plot(range(len(y), len(y) + num_predictions), predictions, label='SVR Prediction', marker='x')
+            # Fit the SVR model
+            model.fit(X_scaled, y_scaled)
 
         elif model_selection == "General Regression Neural Network (GRNN)":
-            st.warning("GRNN implementation is not available in this version.")
+            # Predictions on actual data using GRNN
+            y_pred_scaled = grnn_predict(X_scaled, y_scaled, X_scaled)
+            y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
+
+            # Input for the number of months to forecast
+            num_months = st.number_input("Enter the number of months to forecast:", min_value=1, max_value=50)
+
+            # Make predictions for the next 'num_months' months
+            last_date = df.index[-1]
+            next_dates = [last_date + pd.DateOffset(months=i) for i in range(1, num_months + 1)]
+            next_numeric_dates = np.array([date.toordinal() for date in next_dates]).reshape(-1, 1)
+
+            # Normalizing the prediction dates
+            next_numeric_dates_scaled = scaler_X.transform(next_numeric_dates)
+
+            # Predicting values for the next 'num_months' months using GRNN
+            next_predictions_scaled = grnn_predict(X_scaled, y_scaled, next_numeric_dates_scaled)
+            next_predictions = scaler_y.inverse_transform(next_predictions_scaled.reshape(-1, 1)).ravel()
+
+            # Plotting forecasted and actual values
+            st.subheader("Predictions:")
+            plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
+
+            # Print predicted values for the next 'num_months' months
+            st.subheader(f"Predictions for the next {num_months} months:")
+            for date, pred in zip(next_dates, next_predictions):
+                st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
+
             return
 
-        # Plotting the forecasting values
-        for i in range(num_predictions):
-            ax.plot(len(y) + i, predictions[i], color='red', marker='o', label='Forecasting' if i == 0 else None)
+        # Predictions on actual data
+        y_pred_scaled = model.predict(X_scaled)
+        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
 
-        # Adding labels and title
-        ax.set_xlabel('Month')
-        ax.set_ylabel('Tourism Data')
-        ax.set_title('Actual Data vs Model Prediction & Forecasting')
+        # Input for the number of months to forecast
+        num_months = st.number_input("Enter the number of months to forecast:", min_value=1, max_value=50)
 
-        # Adding legend
+        # Make predictions for the next 'num_months' months
+        last_date = df.index[-1]
+        next_dates = [last_date + pd.DateOffset(months=i) for i in range(1, num_months + 1)]
+        next_numeric_dates = np.array([date.toordinal() for date in next_dates]).reshape(-1, 1)
+
+        # Normalizing the prediction dates
+        next_numeric_dates_scaled = scaler_X.transform(next_numeric_dates)
+
+        # Predicting values for the next 'num_months' months
+        next_predictions_scaled = model.predict(next_numeric_dates_scaled)
+        next_predictions = scaler_y.inverse_transform(next_predictions_scaled.reshape(-1, 1)).ravel()
+
+        # Plotting forecasted and actual values
+        st.subheader("Predictions Graph:")
+        plot_predictions(df, y_pred, next_dates, next_predictions, num_months)
+
+        # Print predicted values for the next 'num_months' months
+        st.subheader(f"Predictions for the next {num_months} months:")
+        for date, pred in zip(next_dates, next_predictions):
+            st.write(f"Date: {date.strftime('%Y-%m')}, Predicted: {pred}")
+
+    def plot_predictions(df, y_pred, next_dates, next_predictions, num_months):
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.plot(df.index, df['Actual'], label='Actual')
+        ax.plot(df.index, y_pred, label='Predictions', linestyle='--', color='blue')
+        ax.plot(next_dates, next_predictions, label='Future Predictions', linestyle='--', color='red')
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Tourism Numbers')
+        ax.set_title('Tourism Forecast')
         ax.legend()
-
-        # Displaying the plot in Streamlit
         st.pyplot(fig)
-
     if __name__ == "__main__":
         main()
 
