@@ -9,5 +9,3 @@ plotly
 tensorflow
 pyGRNN
 svr
-torch
-TimeseriesGenerator
