@@ -10,3 +10,4 @@ tensorflow
 pyGRNN
 svr
 torch
+timeseriesgenerator
