@@ -60,7 +60,7 @@ elif menu == "Model Training":
         st.title(" 1) Inbound Tourism using SVR ")
 
         #Reading the csv file
-        df = pd.read_excel('Malaysia-Tourism1.xlsx')
+        df = pd.read_csv('Malaysia-Tourism1.csv')
         df
 
         df.isnull().sum()
